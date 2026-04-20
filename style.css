@@ -63,7 +63,7 @@ nav {
   font-size: 16px;
   font-weight: 700;
   color: var(--text);
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Sans', sans-serif;
 }
 
 .btn-nav {
@@ -77,7 +77,15 @@ nav {
   transition: background 0.2s, transform 0.15s;
   white-space: nowrap;
 }
+.btn-nav {
+  color: #fff;
+}
 
+.btn-nav::after {
+  content: " ✔";
+  color: #22c55e;
+  font-weight: bold;
+}
 .btn-nav:hover {
   background: var(--blue2);
   transform: translateY(-1px);
@@ -132,7 +140,7 @@ nav {
   font-variant-numeric: tabular-nums;
   min-width: 34px;
   text-align: center;
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Sans', sans-serif;
 }
 
 .timer-unit {
@@ -536,8 +544,8 @@ footer {
     box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
   }
   70% {
-    transform: scale(1.02);   /* 原本1.05 → 改小 */
-    box-shadow: 0 0 0 8px rgba(37, 99, 235, 0); /* 原本15px → 改小 */
+    transform: scale(1.02);  
+    box-shadow: 0 0 0 8px rgba(37, 99, 235, 0); 
   }
   100% {
     transform: scale(1);
