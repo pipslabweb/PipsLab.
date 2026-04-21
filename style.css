@@ -292,12 +292,12 @@ nav {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
-  border: 1.5px solid #024b2b;
+  border: 1.5px solid #4dff85;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--blue-light);
+  background: #ffffff;
 }
 
 .fx-check svg {
