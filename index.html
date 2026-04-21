@@ -168,5 +168,20 @@
   </footer>
 
   <script src="script.js"></script>
+  <script>
+function go(position, url) {
+  if (typeof gtag === 'function') {
+    gtag('event', 'click_telegram', {
+      link_position: position,
+      link_url: url,
+      page_path: window.location.pathname
+    });
+  }
+
+  setTimeout(function () {
+    window.location.href = url;
+  }, 200);
+}
+</script>
 </body>
 </html>
