@@ -7,14 +7,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
       <!-- Google tag -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YW56F7LS8P"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-YW56F7LS8P"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
 
-      gtag('config', 'G-YW56F7LS8P');
-    </script>
+          gtag('config', 'G-YW56F7LS8P');
+        </script>
 </head>
 <body>
 
@@ -171,7 +171,7 @@
   <script>
 function go(position, url) {
   if (typeof gtag === 'function') {
-    gtag('event', 'click_telegram', {
+    gtag('event', 'telegram_click', {
       link_position: position,
       link_url: url,
       page_path: window.location.pathname
