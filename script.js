@@ -22,6 +22,7 @@
 
     /* ---------- Cashback estimator ---------- */
     var brokerSelect = document.getElementById('broker-select');
+    var rateSelect = document.getElementById('rate-select');
     var lotsInput = document.getElementById('lots-input');
     var estimateOutput = document.getElementById('estimate-output');
 
@@ -32,19 +33,31 @@
       });
     }
 
+    var estimateAnimationFrame = null;
     function updateEstimate(){
-      var rate = parseFloat(brokerSelect.value);
+      var rate = parseFloat(rateSelect.value);
       var lots = parseFloat(lotsInput.value);
 
       if(!Number.isFinite(rate) || rate < 0) rate = 0;
       if(!Number.isFinite(lots) || lots < 0) lots = 0;
 
-      var total = rate * lots;
-      estimateOutput.textContent = Number.isFinite(total) ? formatUSD(total) : '—';
+      var target = Number.isFinite(rate * lots) ? rate * lots : 0;
+      var start = parseFloat(estimateOutput.dataset.value || '0');
+      var started = performance.now();
+      if(estimateAnimationFrame) cancelAnimationFrame(estimateAnimationFrame);
+      function tick(now){
+        var ratio = Math.min(1, (now - started) / 360);
+        var eased = 1 - Math.pow(1 - ratio, 3);
+        estimateOutput.textContent = formatUSD(start + (target - start) * eased);
+        if(ratio < 1) estimateAnimationFrame = requestAnimationFrame(tick);
+      }
+      estimateOutput.dataset.value = String(target);
+      estimateAnimationFrame = requestAnimationFrame(tick);
     }
 
-    if(brokerSelect && lotsInput && estimateOutput){
+    if(brokerSelect && rateSelect && lotsInput && estimateOutput){
       brokerSelect.addEventListener('change', updateEstimate);
+      rateSelect.addEventListener('change', updateEstimate);
       lotsInput.addEventListener('input', updateEstimate);
       updateEstimate();
     }
@@ -401,6 +414,111 @@
         resizeOpenAnswers();
       });
     });
+
+    /* ---------- Cinematic scroll reveals and hero parallax ---------- */
+    var motionTargets = document.querySelectorAll(
+      '.section-head,.ledger-row,.broker-card,.resource-card,.event-card,.about-col,.timeline-row,.benefit-row,.faq-layout,.leaderboard-wrap,.leaderboard-summary,.leaderboard-podium,.cta-band-inner'
+    );
+    if(motionTargets.length){
+      document.body.classList.add('motion-ready');
+      if('IntersectionObserver' in window){
+        var revealObserver = new IntersectionObserver(function(entries, observer){
+          entries.forEach(function(entry){
+            if(entry.isIntersecting){
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold:0.12, rootMargin:'0px 0px -35px 0px' });
+        motionTargets.forEach(function(target){ revealObserver.observe(target); });
+      } else {
+        motionTargets.forEach(function(target){ target.classList.add('is-visible'); });
+      }
+    }
+
+    var coinStage = document.querySelector('[data-coin-stage]');
+    var heroVisual = document.querySelector('.hero-visual');
+    if(coinStage && heroVisual && !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      var pointerFrame = null;
+      var pointerX = 0;
+      var pointerY = 0;
+      heroVisual.addEventListener('pointermove', function(event){
+        var rect = heroVisual.getBoundingClientRect();
+        pointerX = (event.clientX - rect.left) / rect.width - .5;
+        pointerY = (event.clientY - rect.top) / rect.height - .5;
+        if(!pointerFrame){
+          pointerFrame = requestAnimationFrame(function(){
+            coinStage.style.setProperty('--coin-ry', (pointerX * 12).toFixed(2) + 'deg');
+            coinStage.style.setProperty('--coin-rx', (pointerY * -10).toFixed(2) + 'deg');
+            coinStage.style.setProperty('--coin-x', (pointerX * 13).toFixed(1) + 'px');
+            coinStage.style.setProperty('--coin-y', (pointerY * 10).toFixed(1) + 'px');
+            pointerFrame = null;
+          });
+        }
+      });
+      heroVisual.addEventListener('pointerleave', function(){
+        coinStage.style.setProperty('--coin-ry','0deg');
+        coinStage.style.setProperty('--coin-rx','0deg');
+        coinStage.style.setProperty('--coin-x','0px');
+        coinStage.style.setProperty('--coin-y','0px');
+      });
+    }
+
+    /* ---------- Scroll progress, header state and section spy ---------- */
+    var header = document.querySelector('.site-header');
+    var progress = document.createElement('div');
+    progress.className = 'scroll-progress';
+    progress.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(progress);
+
+    var scrollFrame = null;
+    function updateScrollUI(){
+      var scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      var ratio = scrollable > 0 ? window.scrollY / scrollable : 0;
+      progress.style.transform = 'scaleX(' + Math.min(1, Math.max(0, ratio)) + ')';
+      if(header) header.classList.toggle('scrolled', window.scrollY > 18);
+      scrollFrame = null;
+    }
+    window.addEventListener('scroll', function(){
+      if(!scrollFrame) scrollFrame = requestAnimationFrame(updateScrollUI);
+    }, { passive:true });
+    updateScrollUI();
+
+    var navLinks = Array.prototype.slice.call(document.querySelectorAll('.main-nav a[href^="#"]'));
+    var navSections = navLinks.map(function(link){
+      return { link:link, section:document.querySelector(link.getAttribute('href')) };
+    }).filter(function(item){ return item.section; });
+    if('IntersectionObserver' in window && navSections.length){
+      var spy = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting){
+            navSections.forEach(function(item){ item.link.classList.toggle('is-active', item.section === entry.target); });
+          }
+        });
+      }, { rootMargin:'-35% 0px -55% 0px', threshold:0 });
+      navSections.forEach(function(item){ spy.observe(item.section); });
+    }
+
+    /* ---------- Gentle 3D card response ---------- */
+    if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      document.querySelectorAll('.broker-card,.resource-card,.podium-card').forEach(function(card){
+        var cardFrame = null;
+        card.addEventListener('pointermove', function(event){
+          var rect = card.getBoundingClientRect();
+          var x = (event.clientX - rect.left) / rect.width - .5;
+          var y = (event.clientY - rect.top) / rect.height - .5;
+          if(cardFrame) cancelAnimationFrame(cardFrame);
+          cardFrame = requestAnimationFrame(function(){
+            card.style.transform = 'perspective(900px) rotateX(' + (-y * 5).toFixed(2) + 'deg) rotateY(' + (x * 6).toFixed(2) + 'deg) translateY(-8px)';
+          });
+        });
+        card.addEventListener('pointerleave', function(){
+          if(cardFrame) cancelAnimationFrame(cardFrame);
+          card.style.transform = '';
+        });
+      });
+    }
+
   }
 
   if(document.readyState === 'loading'){
