@@ -507,6 +507,9 @@
           var rect = card.getBoundingClientRect();
           var x = (event.clientX - rect.left) / rect.width - .5;
           var y = (event.clientY - rect.top) / rect.height - .5;
+          card.style.setProperty('--mouse-x', ((x + .5) * 100).toFixed(1) + '%');
+          card.style.setProperty('--mouse-y', ((y + .5) * 100).toFixed(1) + '%');
+          card.classList.add('is-hovered');
           if(cardFrame) cancelAnimationFrame(cardFrame);
           cardFrame = requestAnimationFrame(function(){
             card.style.transform = 'perspective(900px) rotateX(' + (-y * 5).toFixed(2) + 'deg) rotateY(' + (x * 6).toFixed(2) + 'deg) translateY(-8px)';
@@ -515,9 +518,25 @@
         card.addEventListener('pointerleave', function(){
           if(cardFrame) cancelAnimationFrame(cardFrame);
           card.style.transform = '';
+          card.style.setProperty('--mouse-x', '50%');
+          card.style.setProperty('--mouse-y', '0%');
+          card.classList.remove('is-hovered');
         });
       });
     }
+
+    /* ---------- Contact button ripple ---------- */
+    document.querySelectorAll('.broker-card .btn').forEach(function(button){
+      button.addEventListener('click', function(event){
+        var rect = button.getBoundingClientRect();
+        var ripple = document.createElement('span');
+        ripple.className = 'btn-ripple';
+        ripple.style.left = (event.clientX - rect.left) + 'px';
+        ripple.style.top = (event.clientY - rect.top) + 'px';
+        button.appendChild(ripple);
+        setTimeout(function(){ ripple.remove(); }, 700);
+      });
+    });
 
   }
 
